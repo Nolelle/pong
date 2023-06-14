@@ -30,11 +30,11 @@ int main() {
         leftPaddle.move(0, paddleLeftSy);
       }
 
-      if (event.key.code == sf::Keyboard::I) {
+      if (event.key.code == sf::Keyboard::W) {
         rightPaddle.move(0, -paddleRightSy);
       }
 
-      if (event.key.code == sf::Keyboard::K) {
+      if (event.key.code == sf::Keyboard::S) {
         rightPaddle.move(0, paddleRightSy);
       }
     }
