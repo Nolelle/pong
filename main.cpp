@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <cwchar>
 
 int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
@@ -16,6 +16,12 @@ int main() {
   rightPaddle.setFillColor(sf::Color::White);
   rightPaddle.setPosition(725, 250);
   float paddleRightSy = 5.0f;
+
+  sf::CircleShape ball(50.f);
+  ball.setFillColor(sf::Color::White);
+  ball.setPosition(375, 250);
+  float ballSx = 2.0f;
+  float ballSy = 2.0f;
 
   while (window.isOpen()) {
     sf::Event event;
@@ -61,6 +67,7 @@ int main() {
     window.clear();
     window.draw(leftPaddle);
     window.draw(rightPaddle);
+    window.draw(ball);
     window.display();
   }
   return 0;
