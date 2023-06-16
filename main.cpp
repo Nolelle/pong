@@ -22,7 +22,7 @@ int main() {
   sf::CircleShape ball(10);
   ball.setFillColor(sf::Color::White);
   ball.setPosition(375, 250);
-  sf::Vector2f ballVelocity(2.0f, 0.0f);
+  sf::Vector2f ballVelocity(2.0f, 2.0f);
 
   while (window.isOpen()) {
     sf::Event event;
@@ -76,19 +76,31 @@ int main() {
     // Circleshape origin is at top left of circle (0,0)
     if (ball.getPosition().x < 0 ||
         ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
-      std::cout << "X: " << ballVelocity.x << "\n";
       ballVelocity.x *= -1;
-      std::cout << "X: " << ballVelocity.x << "\n";
     }
     if (ball.getPosition().y < 0 ||
         ball.getPosition().y + (2 * ball.getRadius()) > window.getSize().y) {
-      std::cout << "Y: " << ballVelocity.y << "\n";
       ballVelocity.y *= -1;
-      std::cout << "Y: " << ballVelocity.y << "\n";
     }
 
     // Ball to paddle collision detection
-    // To do
+
+    if (ball.getPosition().x <
+            leftPaddle.getPosition().x + leftPaddle.getSize().x ||
+        ball.getPosition().x + (2 * ball.getRadius()) >
+            rightPaddle.getPosition().x) {
+      ballVelocity.x *= -1;
+    }
+
+    if (ball.getPosition().y + (2 * ball.getRadius()) >
+            leftPaddle.getPosition().y ||
+        ball.getPosition().y + (2 * ball.getRadius()) >
+            rightPaddle.getPosition().y) {
+      ballVelocity.y *= -1;
+    }
+
+    // To do: Scoring System and Menus, Ball is not smooth when moving in x
+    // direction
 
     window.clear();
     window.draw(leftPaddle);
