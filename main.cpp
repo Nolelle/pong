@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <iostream>
@@ -23,6 +24,27 @@ int main() {
   ball.setFillColor(sf::Color::White);
   ball.setPosition(375, 250);
   sf::Vector2f ballVelocity(2.0f, 2.0f);
+
+  int player1Score = 0;
+  int player2Score = 0;
+
+  sf::Font font;
+
+  if (!font.loadFromFile("MontserratAlternates-Regular.ttf")) {
+    std::cout << "Error loading font\n";
+  }
+
+  sf::Text score1Text;
+  score1Text.setFont(font);
+  score1Text.setCharacterSize(24);
+  score1Text.setFillColor(sf::Color::White);
+  score1Text.setString(std::to_string(player1Score));
+
+  sf::Text score2Text;
+  score2Text.setFont(font);
+  score2Text.setCharacterSize(24);
+  score2Text.setFillColor(sf::Color::White);
+  score2Text.setString(std::to_string(player2Score));
 
   while (window.isOpen()) {
     sf::Event event;
@@ -85,6 +107,7 @@ int main() {
 
     // Ball to paddle collision detection
 
+    // TO DO: BALL DOES NOT ONLY COLLIDE WITH PADDLE
     if (ball.getPosition().x <
             leftPaddle.getPosition().x + leftPaddle.getSize().x ||
         ball.getPosition().x + (2 * ball.getRadius()) >
@@ -102,10 +125,22 @@ int main() {
     // To do: Scoring System and Menus, Ball is not smooth when moving in x
     // direction
 
+    if (ball.getPosition().x < 0) {
+      player1Score++;
+      score1Text.setString(std::to_string(player1Score));
+    }
+
+    if (ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
+      player2Score++;
+      score2Text.setString(std::to_string(player2Score));
+    }
+
     window.clear();
     window.draw(leftPaddle);
     window.draw(rightPaddle);
     window.draw(ball);
+    window.draw(score1Text);
+    window.draw(score2Text);
     window.display();
   }
   return 0;
