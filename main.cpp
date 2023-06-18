@@ -30,7 +30,7 @@ int main() {
 
   sf::Font font;
 
-  if (!font.loadFromFile("MontserratAlternates-Regular.ttf")) {
+  if (!font.loadFromFile("Montserrat-Regular.otf")) {
     std::cout << "Error loading font\n";
   }
 
@@ -39,12 +39,14 @@ int main() {
   score1Text.setCharacterSize(24);
   score1Text.setFillColor(sf::Color::White);
   score1Text.setString(std::to_string(player1Score));
+  score1Text.setPosition(50, 50);
 
   sf::Text score2Text;
   score2Text.setFont(font);
   score2Text.setCharacterSize(24);
   score2Text.setFillColor(sf::Color::White);
   score2Text.setString(std::to_string(player2Score));
+  score2Text.setPosition(window.getSize().x - 100, 50);
 
   while (window.isOpen()) {
     sf::Event event;
