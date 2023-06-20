@@ -1,10 +1,14 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <cstdlib>
 #include <iostream>
+
+// g++ -o pong main.cpp -lsfml-graphics -lsfml-window -lsfml-system ./sfml-test
 
 int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
@@ -23,7 +27,9 @@ int main() {
   sf::CircleShape ball(10);
   ball.setFillColor(sf::Color::White);
   ball.setPosition(375, 250);
-  sf::Vector2f ballVelocity(2.0f, 2.0f);
+  sf::Vector2f ballVelocity(200.0f, 200.0f);
+
+  sf::FloatRect windowBounds(0, 0, window.getSize().x, window.getSize().y);
 
   int player1Score = 0;
   int player2Score = 0;
@@ -39,40 +45,48 @@ int main() {
   score1Text.setCharacterSize(24);
   score1Text.setFillColor(sf::Color::White);
   score1Text.setString(std::to_string(player1Score));
-  score1Text.setPosition(50, 50);
+  score1Text.setPosition(200, 50);
 
   sf::Text score2Text;
   score2Text.setFont(font);
   score2Text.setCharacterSize(24);
   score2Text.setFillColor(sf::Color::White);
   score2Text.setString(std::to_string(player2Score));
-  score2Text.setPosition(window.getSize().x - 100, 50);
+  score2Text.setPosition(window.getSize().x - 200, 50);
 
+  sf::Event event;
+  sf::Clock clock;
+  bool isCollidingWithPaddle = false;
   while (window.isOpen()) {
-    sf::Event event;
+    sf::Time dt = clock.restart();
+    float dtAsSeconds = dt.asSeconds();
 
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
         window.close();
     }
 
+    sf::FloatRect rightPaddleBounds = rightPaddle.getGlobalBounds();
+    sf::FloatRect leftPaddleBounds = leftPaddle.getGlobalBounds();
+    sf::FloatRect ballBounds = ball.getGlobalBounds();
+
     // Paddle Input
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
       leftPaddle.move(0, -paddleLeftSy);
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
       leftPaddle.move(0, paddleLeftSy);
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
       rightPaddle.move(0, -paddleRightSy);
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
       rightPaddle.move(0, paddleRightSy);
     }
 
-    // Paddle Collision Detection
+    // Paddle to Top Window Collision Detection
     if (leftPaddle.getPosition().y < 0) {
       leftPaddle.setPosition(leftPaddle.getPosition().x, 0);
     }
@@ -93,49 +107,53 @@ int main() {
                               window.getSize().y - rightPaddle.getSize().y);
     }
 
-    // ball movement
-    ball.move(ballVelocity.x, ballVelocity.y);
+    // Ball Movement
+    ball.move(ballVelocity.x * dtAsSeconds, ballVelocity.y * dtAsSeconds);
 
-    // ball collision detection
-    // Circleshape origin is at top left of circle (0,0)
+    // Ball to Window Collision Detection
     if (ball.getPosition().x < 0 ||
         ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
       ballVelocity.x *= -1;
     }
+
     if (ball.getPosition().y < 0 ||
         ball.getPosition().y + (2 * ball.getRadius()) > window.getSize().y) {
       ballVelocity.y *= -1;
     }
 
-    // Ball to paddle collision detection
-
-    // TO DO: BALL DOES NOT ONLY COLLIDE WITH PADDLE
-    if (ball.getPosition().x <
-            leftPaddle.getPosition().x + leftPaddle.getSize().x ||
-        ball.getPosition().x + (2 * ball.getRadius()) >
-            rightPaddle.getPosition().x) {
-      ballVelocity.x *= -1;
-    }
-
-    if (ball.getPosition().y + (2 * ball.getRadius()) >
-            leftPaddle.getPosition().y ||
-        ball.getPosition().y + (2 * ball.getRadius()) >
-            rightPaddle.getPosition().y) {
-      ballVelocity.y *= -1;
+    // Paddle  to Ball Collision Detection
+    if (ballBounds.intersects(leftPaddleBounds)) {
+      if (!isCollidingWithPaddle) {
+        ballVelocity.x *= -1;
+        isCollidingWithPaddle = true;
+      }
+    } else if (ballBounds.intersects(rightPaddleBounds)) {
+      if (!isCollidingWithPaddle) {
+        ballVelocity.x *= -1;
+        isCollidingWithPaddle = true;
+      }
+    } else {
+      isCollidingWithPaddle = false;
     }
 
     // To do: Scoring System and Menus, Ball is not smooth when moving in x
     // direction
 
-    if (ball.getPosition().x < 0) {
-      player1Score++;
-      score1Text.setString(std::to_string(player1Score));
-    }
-
-    if (ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
-      player2Score++;
-      score2Text.setString(std::to_string(player2Score));
-    }
+    // if (ball.getPosition().x < 0) {
+    //   player2Score++;
+    //   score2Text.setString(std::to_string(player1Score));
+    //   ball.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+    //   leftPaddle.setPosition(50, 250);
+    //   rightPaddle.setPosition(725, 250);
+    // }
+    //
+    // if (ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
+    //   player1Score++;
+    //   score1Text.setString(std::to_string(player2Score));
+    //   ball.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+    //   leftPaddle.setPosition(50, 250);
+    //   rightPaddle.setPosition(725, 250);
+    // }
 
     window.clear();
     window.draw(leftPaddle);
