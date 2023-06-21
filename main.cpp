@@ -9,6 +9,10 @@
 #include <iostream>
 
 // g++ -o pong main.cpp -lsfml-graphics -lsfml-window -lsfml-system ./sfml-test
+// To do:
+// Scoring System
+// Menus
+// Ball and Paddle Class
 
 int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
@@ -31,19 +35,19 @@ int main() {
 
   sf::FloatRect windowBounds(0, 0, window.getSize().x, window.getSize().y);
 
-  int player1Score = 0;
-  int player2Score = 0;
-
   sf::Font font;
 
   if (!font.loadFromFile("Montserrat-Regular.otf")) {
     std::cout << "Error loading font\n";
   }
 
+  int winningScore = 2;
+
   sf::Text score1Text;
   score1Text.setFont(font);
   score1Text.setCharacterSize(24);
   score1Text.setFillColor(sf::Color::White);
+  int player1Score = 0;
   score1Text.setString(std::to_string(player1Score));
   score1Text.setPosition(200, 50);
 
@@ -51,12 +55,25 @@ int main() {
   score2Text.setFont(font);
   score2Text.setCharacterSize(24);
   score2Text.setFillColor(sf::Color::White);
+  int player2Score = 0;
   score2Text.setString(std::to_string(player2Score));
   score2Text.setPosition(window.getSize().x - 200, 50);
+
+  bool gameOver = false;
+  sf::Text gameOverText;
+  gameOverText.setFont(font);
+  gameOverText.setCharacterSize(24);
+  gameOverText.setFillColor(sf::Color::White);
+  gameOverText.setString("Game Over");
+  gameOverText.setOrigin(gameOverText.getLocalBounds().width / 2.0f,
+                         gameOverText.getLocalBounds().height / 2.0f);
+  gameOverText.setPosition(window.getSize().x / 2.0f,
+                           window.getSize().y / 2.0f);
 
   sf::Event event;
   sf::Clock clock;
   bool isCollidingWithPaddle = false;
+
   while (window.isOpen()) {
     sf::Time dt = clock.restart();
     float dtAsSeconds = dt.asSeconds();
@@ -110,18 +127,15 @@ int main() {
     // Ball Movement
     ball.move(ballVelocity.x * dtAsSeconds, ballVelocity.y * dtAsSeconds);
 
-    // Ball to Window Collision Detection
-    if (ball.getPosition().x < 0 ||
-        ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
-      ballVelocity.x *= -1;
-    }
-
     if (ball.getPosition().y < 0 ||
         ball.getPosition().y + (2 * ball.getRadius()) > window.getSize().y) {
       ballVelocity.y *= -1;
     }
 
     // Paddle  to Ball Collision Detection
+    // ball is moving 200/60 = 3.33 pixles per frame the ball could be
+    // intersecting the paddle more then in two frames, so we need to check if
+    // the ball is colliding with the paddle
     if (ballBounds.intersects(leftPaddleBounds)) {
       if (!isCollidingWithPaddle) {
         ballVelocity.x *= -1;
@@ -136,31 +150,42 @@ int main() {
       isCollidingWithPaddle = false;
     }
 
-    // To do: Scoring System and Menus, Ball is not smooth when moving in x
-    // direction
+    if (player1Score == winningScore || player2Score == winningScore) {
+      gameOver = true;
+    }
 
-    // if (ball.getPosition().x < 0) {
-    //   player2Score++;
-    //   score2Text.setString(std::to_string(player1Score));
-    //   ball.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
-    //   leftPaddle.setPosition(50, 250);
-    //   rightPaddle.setPosition(725, 250);
-    // }
-    //
-    // if (ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
-    //   player1Score++;
-    //   score1Text.setString(std::to_string(player2Score));
-    //   ball.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
-    //   leftPaddle.setPosition(50, 250);
-    //   rightPaddle.setPosition(725, 250);
-    // }
+    if (ball.getPosition().x < 0) {
+      player2Score++;
+      score2Text.setString(std::to_string(player2Score));
+      if (!gameOver) {
+        ball.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+        leftPaddle.setPosition(50, 250);
+        rightPaddle.setPosition(725, 250);
+      }
+    }
 
-    window.clear();
-    window.draw(leftPaddle);
-    window.draw(rightPaddle);
-    window.draw(ball);
-    window.draw(score1Text);
-    window.draw(score2Text);
+    if (ball.getPosition().x + (2 * ball.getRadius()) > window.getSize().x) {
+      player1Score++;
+      score1Text.setString(std::to_string(player1Score));
+      if (!gameOver) {
+        ball.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+        leftPaddle.setPosition(50, 250);
+        rightPaddle.setPosition(725, 250);
+      }
+    }
+
+    if (gameOver) {
+      window.clear();
+      window.draw(gameOverText);
+    } else {
+      window.clear();
+      window.draw(leftPaddle);
+      window.draw(rightPaddle);
+      window.draw(ball);
+      window.draw(score1Text);
+      window.draw(score2Text);
+    }
+
     window.display();
   }
   return 0;
